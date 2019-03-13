@@ -396,6 +396,17 @@ function() {
 
                 this._dates = [];
                 this._dates[0] = this.getMoment();
+                for (i = 0; i < this._options.activedDates.length; i++) {
+                    var formatedDate = this._options.activedDates[i].replace("[", "").replace("]", "");
+                    this._dates[i + 1] = moment(formatedDate);
+                    this._datesFormatted[i] = moment(formatedDate).format('YYYY-MM-DD');
+                    if (this.input.val() == '') {
+                        this.input.val(this._options.activedDates[i]);
+                    } else {
+                        this.input.val(this.input.val() + ',' + this._options.activedDates[i]);
+                    }
+                }
+
                 this._viewDate = this.getMoment().clone();
 
                 $.extend(true, this._options, this._dataToOptions());
@@ -805,7 +816,8 @@ function() {
             };
 
             DateTimePicker.prototype._getLastPickedDateIndex = function _getLastPickedDateIndex() {
-                return this._dates.length - 1;
+                if (this._dates)
+                    return this._dates.length - 1;
             };
 
             //public
@@ -875,8 +887,10 @@ function() {
                     }
                 }
 
-                if (newDate !== null && typeof newDate !== 'string' && !moment.isMoment(newDate) && !(newDate instanceof Date)) {
-                    throw new TypeError('date() parameter must be one of [null, string, moment or Date]');
+                if (typeof newDate !== 'object') {
+                    if (newDate !== null && typeof newDate !== 'string' && !moment.isMoment(newDate) && !(newDate instanceof Date)) {
+                        throw new TypeError('date() parameter must be one of [null, string, moment or Date]');
+                    }
                 }
 
                 this._setValue(newDate === null ? null : this._parseInputDate(newDate), index);
@@ -1986,6 +2000,7 @@ function() {
                 }
 
                 months.removeClass('active');
+
                 if (this._getLastPickedDate().isSame(this._viewDate, 'y') && !this.unset) {
                     months.eq(this._getLastPickedDate().month()).addClass('active');
                 }
@@ -2111,10 +2126,6 @@ function() {
                 }
 
                 currentDate = this._viewDate.clone().startOf('M').startOf('w').startOf('d');
-                /*console.log('activedDates', this.options.activedDates);
-                console.log('enabledDates', this.options.enabledDates);
-                console.log('_datesFormatted', this.options._datesFormatted);
-                */
                 for (i = 0; i < 42; i++) {
                     //always display 42 days (should show 6 weeks)
                     if (currentDate.weekday() === 0) {
@@ -2132,6 +2143,7 @@ function() {
                         clsName += ' new';
                     }
                     if (this._options.allowMultidate) {
+
                         var index = this._datesFormatted.indexOf(currentDate.format('YYYY-MM-DD'));
                         if (index !== -1) {
                             if (currentDate.isSame(this._datesFormatted[index], 'd') && !this.unset) {
@@ -2146,9 +2158,7 @@ function() {
                     if (!this._isValid(currentDate, 'd')) {
                         clsName += ' disabled';
                     }
-                    if (this._isInActivedDates(currentDate)) {
-                        clsName += ' activedDate';
-                    }
+
                     if (currentDate.isSame(this.getMoment(), 'd')) {
                         clsName += ' today';
                     }
