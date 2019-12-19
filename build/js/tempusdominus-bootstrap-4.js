@@ -433,7 +433,7 @@ function() {
                 this._fillTime();
             };
 
-            DateTimePicker.prototype._setValue = function _setValue(targetMoment, index) {
+            DateTimePicker.prototype._setValue = function _setValue(targetMoment, index, unSelectDate = null) {
                 var oldDate = this.unset ? null : this._dates[index];
                 var outpValue = '';
                 // case of calling setValue(null or false)
@@ -443,8 +443,11 @@ function() {
                         this._dates = [];
                         this._datesFormatted = [];
                     } else {
-                        outpValue = this._element.data('date') + ',';
-                        outpValue = outpValue.replace(oldDate.format(this.actualFormat) + ',', '').replace(',,', '').replace(/,\s*$/, '');
+                        let datesArray = this._element.data('date').split(this._options.multidateSeparator);
+                        for( var i = datesArray.length; i--;){
+                            if ( datesArray[i] === unSelectDate.toString()) datesArray.splice(i, 1);
+                        }
+                        outpValue = datesArray.toString();
                         this._dates.splice(index, 1);
                         this._datesFormatted.splice(index, 1);
                     }
@@ -461,6 +464,8 @@ function() {
                     this._update();
                     return;
                 }
+
+                
 
                 targetMoment = targetMoment.clone().locale(this._options.locale);
 
@@ -2349,7 +2354,7 @@ function() {
                             if (this._options.allowMultidate) {
                                 index = this._datesFormatted.indexOf(selectDate.format('YYYY-MM-DD'));
                                 if (index !== -1) {
-                                    this._setValue(null, index); //deselect multidate
+                                    this._setValue(null, index, selectDate.format(this.actualFormat)); //deselect multidate
                                 } else {
                                     this._setValue(selectDate, this._getLastPickedDateIndex() + 1);
                                 }
